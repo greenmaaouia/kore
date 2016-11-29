@@ -104,20 +104,33 @@ extern int daemon(int, int);
 struct http_request;
 #endif
 
+struct segment {
+    char *ptr;
+    size_t len;
+} ;
+
+struct vsequence{
+    char * name;
+    struct segment *data;
+    time_t time;
+    struct  vsequence *next;
+
+};
+
 struct netbuf {
-	u_int8_t		*buf;
-	size_t			s_off;
-	size_t			b_len;
-	size_t			m_len;
-	u_int8_t		type;
-	u_int8_t		flags;
+    u_int8_t		*buf;
+    size_t			s_off;
+    size_t			b_len;
+    size_t			m_len;
+    u_int8_t		type;
+    u_int8_t		flags;
 
-	void			*owner;
+    void			*owner;
 
-	void			*extra;
-	int			(*cb)(struct netbuf *);
+    void			*extra;
+    int			(*cb)(struct netbuf *);
 
-	TAILQ_ENTRY(netbuf)	list;
+    TAILQ_ENTRY(netbuf)	list;
 };
 
 TAILQ_HEAD(netbuf_head, netbuf);
@@ -162,45 +175,45 @@ TAILQ_HEAD(netbuf_head, netbuf);
 #define KORE_CONNECTION_PRUNE_ALL		1
 
 struct connection {
-	u_int8_t		type;
-	int			fd;
-	u_int8_t		state;
-	u_int8_t		proto;
-	void			*owner;
+    u_int8_t		type;
+    int			fd;
+    u_int8_t		state;
+    u_int8_t		proto;
+    void			*owner;
 #if !defined(KORE_NO_TLS)
-	X509			*cert;
-	SSL			*ssl;
-	int			tls_reneg;
+    X509			*cert;
+    SSL			*ssl;
+    int			tls_reneg;
 #endif
-	u_int8_t		flags;
-	void			*hdlr_extra;
+    u_int8_t		flags;
+    void			*hdlr_extra;
 
-	int			(*handle)(struct connection *);
-	void			(*disconnect)(struct connection *);
-	int			(*read)(struct connection *, int *);
-	int			(*write)(struct connection *, int, int *);
+    int			(*handle)(struct connection *);
+    void			(*disconnect)(struct connection *);
+    int			(*read)(struct connection *, int *);
+    int			(*write)(struct connection *, int, int *);
 
-	u_int8_t		addrtype;
-	union {
-		struct sockaddr_in	ipv4;
-		struct sockaddr_in6	ipv6;
-	} addr;
+    u_int8_t		addrtype;
+    union {
+        struct sockaddr_in	ipv4;
+        struct sockaddr_in6	ipv6;
+    } addr;
 
-	struct {
-		u_int64_t	length;
-		u_int64_t	start;
-	} idle_timer;
+    struct {
+        u_int64_t	length;
+        u_int64_t	start;
+    } idle_timer;
 
-	struct netbuf_head	send_queue;
-	struct netbuf		*snb;
-	struct netbuf		*rnb;
+    struct netbuf_head	send_queue;
+    struct netbuf		*snb;
+    struct netbuf		*rnb;
 
 #if !defined(KORE_NO_HTTP)
-	void				*wscbs;
-	TAILQ_HEAD(, http_request)	http_requests;
+    void				*wscbs;
+    TAILQ_HEAD(, http_request)	http_requests;
 #endif
 
-	TAILQ_ENTRY(connection)	list;
+    TAILQ_ENTRY(connection)	list;
 };
 
 TAILQ_HEAD(connection_list, connection);
@@ -208,17 +221,17 @@ extern struct connection_list	connections;
 extern struct connection_list	disconnected;
 
 struct listener {
-	u_int8_t		type;
-	u_int8_t		addrtype;
-	int			fd;
-	void			(*connect)(struct connection *);
+    u_int8_t		type;
+    u_int8_t		addrtype;
+    int			fd;
+    void			(*connect)(struct connection *);
 
-	union {
-		struct sockaddr_in	ipv4;
-		struct sockaddr_in6	ipv6;
-	} addr;
+    union {
+        struct sockaddr_in	ipv4;
+        struct sockaddr_in6	ipv6;
+    } addr;
 
-	LIST_ENTRY(listener)	list;
+    LIST_ENTRY(listener)	list;
 };
 
 LIST_HEAD(listener_head, listener);
@@ -226,11 +239,11 @@ LIST_HEAD(listener_head, listener);
 #if !defined(KORE_NO_HTTP)
 
 struct kore_handler_params {
-	char			*name;
-	u_int8_t		method;
-	struct kore_validator	*validator;
+    char			*name;
+    u_int8_t		method;
+    struct kore_validator	*validator;
 
-	TAILQ_ENTRY(kore_handler_params)	list;
+    TAILQ_ENTRY(kore_handler_params)	list;
 };
 
 #define KORE_AUTH_TYPE_COOKIE		1
@@ -238,13 +251,13 @@ struct kore_handler_params {
 #define KORE_AUTH_TYPE_REQUEST		3
 
 struct kore_auth {
-	u_int8_t		type;
-	char			*name;
-	char			*value;
-	char			*redirect;
-	struct kore_validator	*validator;
+    u_int8_t		type;
+    char			*name;
+    char			*value;
+    char			*redirect;
+    struct kore_validator	*validator;
 
-	TAILQ_ENTRY(kore_auth)	list;
+    TAILQ_ENTRY(kore_auth)	list;
 };
 
 #define HANDLER_TYPE_STATIC	1
@@ -256,53 +269,53 @@ struct kore_auth {
 #define KORE_MODULE_UNLOAD	2
 
 struct kore_module {
-	void			*handle;
-	char			*path;
-	char			*onload;
-	int			(*ocb)(int);
+    void			*handle;
+    char			*path;
+    char			*onload;
+    int			(*ocb)(int);
 
-	time_t			mtime;
+    time_t			mtime;
 
-	TAILQ_ENTRY(kore_module)	list;
+    TAILQ_ENTRY(kore_module)	list;
 };
 
 struct kore_module_handle {
-	char			*path;
-	char			*func;
-	void			*addr;
-	int			type;
-	int			errors;
-	regex_t			rctx;
-	struct kore_domain	*dom;
+    char			*path;
+    char			*func;
+    void			*addr;
+    int			type;
+    int			errors;
+    regex_t			rctx;
+    struct kore_domain	*dom;
 #if !defined(KORE_NO_HTTP)
-	struct kore_auth	*auth;
-	TAILQ_HEAD(, kore_handler_params)	params;
+    struct kore_auth	*auth;
+    TAILQ_HEAD(, kore_handler_params)	params;
 #endif
-	TAILQ_ENTRY(kore_module_handle)		list;
+    TAILQ_ENTRY(kore_module_handle)		list;
 };
 
 struct kore_worker {
-	u_int8_t			id;
-	u_int8_t			cpu;
-	pid_t				pid;
-	int				pipe[2];
-	struct connection		*msg[2];
-	u_int8_t			has_lock;
-	struct kore_module_handle	*active_hdlr;
+    u_int8_t			id;
+    u_int8_t			cpu;
+    pid_t				pid;
+    int				pipe[2];
+    struct connection		*msg[2];
+    u_int8_t			has_lock;
+    struct kore_module_handle	*active_hdlr;
 };
 
 struct kore_domain {
-	char					*domain;
-	int					accesslog;
+    char					*domain;
+    int					accesslog;
 #if !defined(KORE_NO_TLS)
-	char					*cafile;
-	char					*crlfile;
-	char					*certfile;
-	char					*certkey;
-	SSL_CTX					*ssl_ctx;
+    char					*cafile;
+    char					*crlfile;
+    char					*certfile;
+    char					*certkey;
+    SSL_CTX					*ssl_ctx;
 #endif
-	TAILQ_HEAD(, kore_module_handle)	handlers;
-	TAILQ_ENTRY(kore_domain)		list;
+    TAILQ_HEAD(, kore_module_handle)	handlers;
+    TAILQ_ENTRY(kore_domain)		list;
 };
 
 TAILQ_HEAD(kore_domain_h, kore_domain);
@@ -313,64 +326,64 @@ TAILQ_HEAD(kore_domain_h, kore_domain);
 #define KORE_VALIDATOR_TYPE_FUNCTION	2
 
 struct kore_validator {
-	u_int8_t		type;
-	char			*name;
-	char			*arg;
-	regex_t			rctx;
-	int			(*func)(struct http_request *, char *);
+    u_int8_t		type;
+    char			*name;
+    char			*arg;
+    regex_t			rctx;
+    int			(*func)(struct http_request *, char *);
 
-	TAILQ_ENTRY(kore_validator)	list;
+    TAILQ_ENTRY(kore_validator)	list;
 };
 #endif
 
 #define KORE_BUF_OWNER_API	0x0001
 
 struct kore_buf {
-	u_int8_t		*data;
-	int			flags;
-	size_t			length;
-	size_t			offset;
+    u_int8_t		*data;
+    int			flags;
+    size_t			length;
+    size_t			offset;
 };
 
 struct kore_pool_region {
-	void				*start;
-	size_t				length;
-	LIST_ENTRY(kore_pool_region)	list;
+    void				*start;
+    size_t				length;
+    LIST_ENTRY(kore_pool_region)	list;
 };
 
 struct kore_pool_entry {
-	u_int8_t			state;
-	struct kore_pool_region		*region;
-	LIST_ENTRY(kore_pool_entry)	list;
+    u_int8_t			state;
+    struct kore_pool_region		*region;
+    LIST_ENTRY(kore_pool_entry)	list;
 };
 
 struct kore_pool {
-	size_t			elen;
-	size_t			slen;
-	size_t			elms;
-	size_t			inuse;
-	volatile int		lock;
-	char			*name;
+    size_t			elen;
+    size_t			slen;
+    size_t			elms;
+    size_t			inuse;
+    volatile int		lock;
+    char			*name;
 
-	LIST_HEAD(, kore_pool_region)	regions;
-	LIST_HEAD(, kore_pool_entry)	freelist;
+    LIST_HEAD(, kore_pool_region)	regions;
+    LIST_HEAD(, kore_pool_entry)	freelist;
 };
 
 struct kore_wscbs {
-	void		(*connect)(struct connection *);
-	void		(*message)(struct connection *, u_int8_t,
-			    void *, size_t);
-	void		(*disconnect)(struct connection *);
+    void		(*connect)(struct connection *);
+    void		(*message)(struct connection *, u_int8_t,
+                           void *, size_t);
+    void		(*disconnect)(struct connection *);
 };
 
 struct kore_timer {
-	u_int64_t	nextrun;
-	u_int64_t	interval;
-	int		flags;
-	void		*arg;
-	void		(*cb)(void *, u_int64_t);
+    u_int64_t	nextrun;
+    u_int64_t	interval;
+    int		flags;
+    void		*arg;
+    void		(*cb)(void *, u_int64_t);
 
-	TAILQ_ENTRY(kore_timer)	list;
+    TAILQ_ENTRY(kore_timer)	list;
 };
 
 #define KORE_WORKER_KEYMGR	0
@@ -386,19 +399,19 @@ struct kore_timer {
 #define KORE_MSG_WORKER_ALL	1001
 
 struct kore_msg {
-	u_int8_t	id;
-	u_int16_t	src;
-	u_int16_t	dst;
-	u_int32_t	length;
+    u_int8_t	id;
+    u_int16_t	src;
+    u_int16_t	dst;
+    u_int32_t	length;
 };
 
 #if !defined(KORE_NO_TLS)
 struct kore_keyreq {
-	int		padding;
-	char		domain[KORE_DOMAINNAME_LEN];
-	u_int8_t	domain_len;
-	u_int16_t	data_len;
-	u_int8_t	data[];
+    int		padding;
+    char		domain[KORE_DOMAINNAME_LEN];
+    u_int8_t	domain_len;
+    u_int16_t	data_len;
+    u_int8_t	data[];
 };
 #endif
 
@@ -482,7 +495,7 @@ void		kore_timer_init(void);
 u_int64_t	kore_timer_run(u_int64_t);
 void		kore_timer_remove(struct kore_timer *);
 struct kore_timer	*kore_timer_add(void (*cb)(void *, u_int64_t),
-			    u_int64_t, void *, int);
+                                     u_int64_t, void *, int);
 
 void		kore_listener_cleanup(void);
 int		kore_server_bind(const char *, const char *, const char *);
@@ -503,13 +516,14 @@ void			kore_connection_disconnect(struct connection *);
 void			kore_connection_start_idletimer(struct connection *);
 void			kore_connection_stop_idletimer(struct connection *);
 void			kore_connection_check_idletimer(u_int64_t,
-			    struct connection *);
+                                                struct connection *);
 int			kore_connection_accept(struct listener *,
-			    struct connection **);
+                                      struct connection **);
 
 u_int64_t	kore_time_ms(void);
 void		kore_log_init(void);
 
+void		*video_cache(void);
 void		*kore_malloc(size_t);
 void		kore_parse_config(void);
 void		*kore_calloc(size_t, size_t);
@@ -520,7 +534,7 @@ void		kore_mem_init(void);
 void		*kore_pool_get(struct kore_pool *);
 void		kore_pool_put(struct kore_pool *, void *);
 void		kore_pool_init(struct kore_pool *, const char *,
-		    size_t, size_t);
+                           size_t, size_t);
 void		kore_pool_cleanup(struct kore_pool *);
 
 time_t		kore_date_to_time(char *);
@@ -542,11 +556,11 @@ char		*kore_read_line(FILE *, char *, size_t);
 
 #if !defined(KORE_NO_HTTP)
 void		kore_websocket_handshake(struct http_request *,
-		    struct kore_wscbs *);
+                                     struct kore_wscbs *);
 void		kore_websocket_send(struct connection *,
-		    u_int8_t, const void *, size_t);
+                                u_int8_t, const void *, size_t);
 void		kore_websocket_broadcast(struct connection *,
-		    u_int8_t, const void *, size_t, int);
+                                     u_int8_t, const void *, size_t, int);
 #endif
 
 void		kore_msg_init(void);
@@ -556,7 +570,7 @@ void		kore_msg_parent_add(struct kore_worker *);
 void		kore_msg_parent_remove(struct kore_worker *);
 void		kore_msg_send(u_int16_t, u_int8_t, const void *, u_int32_t);
 int		kore_msg_register(u_int8_t,
-		    void (*cb)(struct kore_msg *, const void *));
+                             void (*cb)(struct kore_msg *, const void *));
 
 void		kore_domain_init(void);
 void		kore_domain_cleanup(void);
@@ -575,12 +589,12 @@ void		kore_module_load(const char *, const char *);
 void		kore_domain_sslstart(struct kore_domain *);
 void		kore_domain_callback(void (*cb)(struct kore_domain *));
 int		kore_module_handler_new(const char *, const char *,
-		    const char *, const char *, int);
+                                   const char *, const char *, int);
 void		kore_module_handler_free(struct kore_module_handle *);
 
 struct kore_domain		*kore_domain_lookup(const char *);
 struct kore_module_handle	*kore_module_handler_find(const char *,
-				    const char *);
+                                                       const char *);
 
 #if !defined(KORE_NO_HTTP)
 void		kore_validator_init(void);
@@ -588,7 +602,7 @@ void		kore_validator_reload(void);
 int		kore_validator_add(const char *, u_int8_t, const char *);
 int		kore_validator_run(struct http_request *, const char *, char *);
 int		kore_validator_check(struct http_request *,
-		    struct kore_validator *, void *);
+                                struct kore_validator *, void *);
 struct kore_validator	*kore_validator_lookup(const char *);
 #endif
 
@@ -612,15 +626,15 @@ int		net_read_ssl(struct connection *, int *);
 int		net_write(struct connection *, int, int *);
 int		net_write_ssl(struct connection *, int, int *);
 void		net_recv_reset(struct connection *, size_t,
-		    int (*cb)(struct netbuf *));
+                           int (*cb)(struct netbuf *));
 void		net_remove_netbuf(struct netbuf_head *, struct netbuf *);
 void		net_recv_queue(struct connection *, size_t, int,
-		    int (*cb)(struct netbuf *));
+                           int (*cb)(struct netbuf *));
 void		net_recv_expand(struct connection *c, size_t,
-		    int (*cb)(struct netbuf *));
+                            int (*cb)(struct netbuf *));
 void		net_send_queue(struct connection *, const void *, size_t);
 void		net_send_stream(struct connection *, void *,
-		    size_t, int (*cb)(struct netbuf *), struct netbuf **);
+                            size_t, int (*cb)(struct netbuf *), struct netbuf **);
 
 void		kore_buf_free(struct kore_buf *);
 struct kore_buf	*kore_buf_alloc(size_t);
@@ -639,7 +653,6 @@ void	kore_keymgr_run(void);
 void	kore_keymgr_cleanup(void);
 
 #if defined(KORE_SINGLE_BINARY)
-void	kore_preload(void);
 void	kore_onload(void);
 #endif
 

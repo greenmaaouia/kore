@@ -33,159 +33,165 @@
 	(struct meminfo *)((u_int8_t *)x + KORE_MEMSIZE(x))
 
 struct meminfo {
-	u_int16_t		magic;
+    u_int16_t		magic;
 };
 
 struct memblock {
-	struct kore_pool	pool;
+    struct kore_pool	pool;
 };
 
 static size_t			memblock_index(size_t);
 
 static struct memblock		blocks[KORE_MEM_BLOCKS];
 
+static struct  vsequence* maincache=NULL;
 void
 kore_mem_init(void)
 {
-	int		i, len;
-	char		name[32];
-	u_int32_t	size, elm, mlen;
+    int		i, len;
+    char		name[32];
+    u_int32_t	size, elm, mlen;
 
-	size = 8;
+    size = 8;
 
-	for (i = 0; i < KORE_MEM_BLOCKS; i++) {
-		len = snprintf(name, sizeof(name), "block-%u", size);
-		if (len == -1 || (size_t)len >= sizeof(name))
-			fatal("kore_mem_init: snprintf");
+    for (i = 0; i < KORE_MEM_BLOCKS; i++) {
+        len = snprintf(name, sizeof(name), "block-%u", size);
+        if (len == -1 || (size_t)len >= sizeof(name))
+            fatal("kore_mem_init: snprintf");
 
-		elm = (KORE_MEM_BLOCK_PREALLOC * 1024) / size;
-		mlen = sizeof(size_t) + size +
-		    sizeof(struct meminfo) + KORE_MEM_ALIGN;
-		mlen = mlen & ~(KORE_MEM_ALIGN - 1);
+        elm = (KORE_MEM_BLOCK_PREALLOC * 1024) / size;
+        mlen = sizeof(size_t) + size +
+               sizeof(struct meminfo) + KORE_MEM_ALIGN;
+        mlen = mlen & ~(KORE_MEM_ALIGN - 1);
 
-		kore_pool_init(&blocks[i].pool, name, mlen, elm);
+        kore_pool_init(&blocks[i].pool, name, mlen, elm);
 
-		size = size << 1;
-	}
+        size = size << 1;
+    }
+}
+
+void 		*video_cache(void)
+{
+    return (void*) maincache;
 }
 
 void *
 kore_malloc(size_t len)
 {
-	void			*ptr;
-	struct meminfo		*mem;
-	u_int8_t		*addr;
-	size_t			mlen, idx, *plen;
+    void			*ptr;
+    struct meminfo		*mem;
+    u_int8_t		*addr;
+    size_t			mlen, idx, *plen;
 
-	if (len == 0)
-		fatal("kore_malloc(): zero size");
+    if (len == 0)
+        fatal("kore_malloc(): zero size");
 
-	if (len <= KORE_MEM_BLOCK_SIZE_MAX) {
-		idx = memblock_index(len);
-		ptr = kore_pool_get(&blocks[idx].pool);
-	} else {
-		mlen = sizeof(size_t) + len + sizeof(struct meminfo);
-		if ((ptr = calloc(1, mlen)) == NULL)
-			fatal("kore_malloc(%zd): %d", len, errno);
-	}
+    if (len <= KORE_MEM_BLOCK_SIZE_MAX) {
+        idx = memblock_index(len);
+        ptr = kore_pool_get(&blocks[idx].pool);
+    } else {
+        mlen = sizeof(size_t) + len + sizeof(struct meminfo);
+        if ((ptr = calloc(1, mlen)) == NULL)
+            fatal("kore_malloc(%zd): %d", len, errno);
+    }
 
-	plen = (size_t *)ptr;
-	*plen = len;
-	addr = (u_int8_t *)ptr + sizeof(size_t);
+    plen = (size_t *)ptr;
+    *plen = len;
+    addr = (u_int8_t *)ptr + sizeof(size_t);
 
-	mem = KORE_MEMINFO(addr);
-	mem->magic = KORE_MEM_MAGIC;
+    mem = KORE_MEMINFO(addr);
+    mem->magic = KORE_MEM_MAGIC;
 
-	return (addr);
+    return (addr);
 }
 
 void *
 kore_realloc(void *ptr, size_t len)
 {
-	struct meminfo		*mem;
-	void			*nptr;
+    struct meminfo		*mem;
+    void			*nptr;
 
-	if (len == 0)
-		fatal("kore_realloc(): zero size");
+    if (len == 0)
+        fatal("kore_realloc(): zero size");
 
-	if (ptr == NULL) {
-		nptr = kore_malloc(len);
-	} else {
-		mem = KORE_MEMINFO(ptr);
-		if (mem->magic != KORE_MEM_MAGIC)
-			fatal("kore_realloc(): magic boundary not found");
+    if (ptr == NULL) {
+        nptr = kore_malloc(len);
+    } else {
+        mem = KORE_MEMINFO(ptr);
+        if (mem->magic != KORE_MEM_MAGIC)
+            fatal("kore_realloc(): magic boundary not found");
 
-		nptr = kore_malloc(len);
-		memcpy(nptr, ptr, MIN(len, KORE_MEMSIZE(ptr)));
-		kore_free(ptr);
-	}
+        nptr = kore_malloc(len);
+        memcpy(nptr, ptr, MIN(len, KORE_MEMSIZE(ptr)));
+        kore_free(ptr);
+    }
 
-	return (nptr);
+    return (nptr);
 }
 
 void *
 kore_calloc(size_t memb, size_t len)
 {
-	if (memb == 0 || len == 0)
-		fatal("kore_calloc(): zero size");
-	if (SIZE_MAX / memb < len)
-		fatal("kore_calloc(): memb * len > SIZE_MAX");
+    if (memb == 0 || len == 0)
+        fatal("kore_calloc(): zero size");
+    if (SIZE_MAX / memb < len)
+        fatal("kore_calloc(): memb * len > SIZE_MAX");
 
-	return (kore_malloc(memb * len));
+    return (kore_malloc(memb * len));
 }
 
 void
 kore_free(void *ptr)
 {
-	u_int8_t		*addr;
-	struct meminfo		*mem;
-	size_t			len, idx;
+    u_int8_t		*addr;
+    struct meminfo		*mem;
+    size_t			len, idx;
 
-	if (ptr == NULL)
-		return;
+    if (ptr == NULL)
+        return;
 
-	mem = KORE_MEMINFO(ptr);
-	if (mem->magic != KORE_MEM_MAGIC)
-		fatal("kore_free(): magic boundary not found");
+    mem = KORE_MEMINFO(ptr);
+    if (mem->magic != KORE_MEM_MAGIC)
+        fatal("kore_free(): magic boundary not found");
 
-	len = KORE_MEMSIZE(ptr);
-	addr = (u_int8_t *)ptr - sizeof(size_t);
+    len = KORE_MEMSIZE(ptr);
+    addr = (u_int8_t *)ptr - sizeof(size_t);
 
-	if (len <= KORE_MEM_BLOCK_SIZE_MAX) {
-		idx = memblock_index(len);
-		kore_pool_put(&blocks[idx].pool, addr);
-	} else {
-		free(addr);
-	}
+    if (len <= KORE_MEM_BLOCK_SIZE_MAX) {
+        idx = memblock_index(len);
+        kore_pool_put(&blocks[idx].pool, addr);
+    } else {
+        free(addr);
+    }
 }
 
 char *
 kore_strdup(const char *str)
 {
-	size_t		len;
-	char		*nstr;
+    size_t		len;
+    char		*nstr;
 
-	len = strlen(str) + 1;
-	nstr = kore_malloc(len);
-	(void)kore_strlcpy(nstr, str, len);
+    len = strlen(str) + 1;
+    nstr = kore_malloc(len);
+    (void)kore_strlcpy(nstr, str, len);
 
-	return (nstr);
+    return (nstr);
 }
 
 static size_t
 memblock_index(size_t len)
 {
-	size_t		mlen, idx;
+    size_t		mlen, idx;
 
-	idx = 0;
-	mlen = 8;
-	while (mlen < len) {
-		idx++;
-		mlen = mlen << 1;
-	}
+    idx = 0;
+    mlen = 8;
+    while (mlen < len) {
+        idx++;
+        mlen = mlen << 1;
+    }
 
-	if (idx > (KORE_MEM_BLOCKS - 1))
-		fatal("kore_malloc: idx too high");
+    if (idx > (KORE_MEM_BLOCKS - 1))
+        fatal("kore_malloc: idx too high");
 
-	return (idx);
+    return (idx);
 }
