@@ -30,6 +30,7 @@
 #include "http.h"
 #endif
 
+#include "video_cache.h"
 volatile sig_atomic_t			sig_recv;
 
 struct listener_head	listeners;
@@ -46,6 +47,7 @@ char			*runas_user = NULL;
 u_int32_t		kore_socket_backlog = 5000;
 char			*kore_pidfile = KORE_PIDFILE_DEFAULT;
 char			*kore_tls_cipher_list = KORE_DEFAULT_CIPHER_LIST;
+static struct vsequence * v_cache=NULL;
 
 extern char		*__progname;
 
