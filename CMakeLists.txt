@@ -33,6 +33,7 @@ set(SOURCE_FILES
         src/utils.c
         src/validator.c
         src/websocket.c
-        src/worker.c )
+        src/worker.c
+        src/video_cache.c)
 #dsldksdsdlk
 add_executable(kore ${SOURCE_FILES})

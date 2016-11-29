@@ -11,11 +11,36 @@ static struct vsequence * initSequence(char * name, struct segment * data);
 static struct vsequence * getSequence(struct vsequence *s, char *name);
 static int cachesize(struct vsequence * cache);
 static struct vsequence * get_sequence(struct vsequence * s, char *name);*/
+
+
+
+
+
 static struct vsequence * v_cache=NULL;
+
+
+
+
 
  void 		*video_cache(void)
 {
 	return (void*) v_cache;
+}
+
+int vcachelen(void){
+    return cachesize(v_cache);
+}
+
+void vcacheclean(void){
+    clean_cache(v_cache);
+}
+
+struct vsequence * vcacheget(char * name){
+    return get_sequence(v_cache,name);
+}
+
+void vcacheadd( struct vsequence *s){
+addSequence(s);
 }
 
 
@@ -27,7 +52,6 @@ int cachesize(struct vsequence * cache){
 
 
 }
-
 
 struct vsequence * initSequence(char * name, struct segment * data){
 	kore_log(LOG_ALERT,"initialising sequence %s of %lu byte\n",name,data->len);
@@ -43,12 +67,12 @@ struct vsequence * initSequence(char * name, struct segment * data){
 }
 
 
-int addSequence(struct vsequence ** cache, struct vsequence *s){
+int addSequence( struct vsequence *s){
 	kore_log(LOG_ALERT,"adding sequence %s to cache at %lu\n",s->name,s->time);
-	if(get_sequence(*cache, s->name)==NULL){
-		s->next=*cache;
+	if(get_sequence(v_cache, s->name)==NULL){
+		s->next=v_cache;
 		s->time=time(NULL)+EXPIRE_TIME;
-		*cache=s;
+		v_cache=s;
 		kore_log(LOG_ALERT,"sequence  cached now\n");
 		return 0;
 	}
