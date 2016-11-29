@@ -1,4 +1,4 @@
-
+#define _GNU_SOURCE
 #include <time.h>
 #include <curl/curl.h>
 #include <stdio.h>
