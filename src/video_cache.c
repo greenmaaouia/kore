@@ -108,7 +108,7 @@ int clean_sequence(struct vsequence * s){
 
 	if(s == NULL)
 		return NULL;
-	kore_log(LOG_ALERT,"cleaning cache %s %lu\n",s->name,s->time);
+	kore_log(LOG_ALERT,"cleaning cache %s %lu @ %lu\n",s->name,s->time,s);
 	if (s->time< time(NULL))
 	{
 		struct vsequence * tmp = s->next;
