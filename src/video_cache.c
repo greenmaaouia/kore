@@ -60,7 +60,8 @@ struct vsequence * initSequence(char * name, struct segment * data){
 	sequence1=(struct vsequence *) malloc(sizeof(struct vsequence));
 	sequence1->data=data;
 	sequence1->next=NULL;
-	sequence1->name=name;
+	sequence1->name=(char*)malloc(sizeof(char*)*strlen(name));
+            memcpy(sequence1->name,name,strlen(name));
 	sequence1->time=time(NULL);
 	kore_log(LOG_ALERT,"initialised sequence %s of %lu byte\n",sequence1->name,sequence1->data->len);
 	return sequence1;
