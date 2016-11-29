@@ -12,6 +12,7 @@ static struct vsequence * getSequence(struct vsequence *s, char *name);
 static int cachesize(struct vsequence * cache);
 static struct vsequence * get_sequence(struct vsequence * s, char *name);*/
 static struct vsequence * v_cache=NULL;
+
  void 		*video_cache(void)
 {
 	return (void*) v_cache;

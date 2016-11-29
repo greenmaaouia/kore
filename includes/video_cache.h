@@ -1,17 +1,17 @@
 
 #define EXPIRE_TIME 60
-struct segment {
+typedef struct segment {
 	char *ptr;
 	size_t len;
-} ;
+} segment;
 
-struct vsequence{
+typedef struct vsequence{
 	char * name;
 	struct segment *data;
 	time_t time;
 	struct  vsequence *next;
 
-};
+}vsequence;
 
 
 
