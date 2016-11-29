@@ -44,7 +44,7 @@ static size_t			memblock_index(size_t);
 
 static struct memblock		blocks[KORE_MEM_BLOCKS];
 
-static struct  vsequence* maincache=NULL;
+
 void
 kore_mem_init(void)
 {
@@ -70,10 +70,6 @@ kore_mem_init(void)
     }
 }
 
-void 		*video_cache(void)
-{
-    return (void*) maincache;
-}
 
 void *
 kore_malloc(size_t len)

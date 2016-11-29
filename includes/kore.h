@@ -104,18 +104,6 @@ extern int daemon(int, int);
 struct http_request;
 #endif
 
-struct segment {
-    char *ptr;
-    size_t len;
-} ;
-
-struct vsequence{
-    char * name;
-    struct segment *data;
-    time_t time;
-    struct  vsequence *next;
-
-};
 
 struct netbuf {
     u_int8_t		*buf;

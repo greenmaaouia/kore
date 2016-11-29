@@ -57,6 +57,13 @@ ifneq ("$(TASKS)", "")
 	CFLAGS+=-DKORE_USE_TASKS
 endif
 
+ifeq ("$(VCACHE)", "")
+	S_SRC+=src/video_cache.c
+	LDFLAGS+=-lpthread
+	CFLAGS+=-DKORE_USE_VIDEOCACHE
+endif
+
+
 ifneq ("$(JSONRPC)", "")
 	S_SRC+=src/jsonrpc.c
 	LDFLAGS+=-lyajl

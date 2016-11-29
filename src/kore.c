@@ -55,6 +55,7 @@ static void	kore_server_start(void);
 static void	kore_write_kore_pid(void);
 static void	kore_server_sslstart(void);
 
+
 static void
 usage(void)
 {
