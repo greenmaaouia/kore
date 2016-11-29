@@ -59,7 +59,7 @@ endif
 
 ifeq ("$(VCACHE)", "")
 	S_SRC+=src/video_cache.c
-	LDFLAGS+=-lpthread
+	LDFLAGS+=-lcurl
 	CFLAGS+=-DKORE_USE_VIDEOCACHE
 endif
 

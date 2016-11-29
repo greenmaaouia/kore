@@ -13,7 +13,28 @@ typedef struct vsequence{
 
 }vsequence;
 
+struct myprogress {
+    double lastruntime;
+    CURL *curl;
+};
 
+
+void init_string( segment *s);
+size_t writestringfunc(void *ptr, size_t size, size_t nmemb, struct segment *s);
+static int xferinfo(void *p,
+                    curl_off_t dltotal, curl_off_t dlnow,
+                    curl_off_t ultotal, curl_off_t ulnow);
+static int older_progress(void *p,
+                          double dltotal, double dlnow,
+                          double ultotal, double ulnow);
+
+
+void curlgetsegment( char *url, struct segment * s);
+static struct vsequence * v_cache=NULL;
+
+
+
+void curlget( char *url, char **longString);
 
 void *video_cache(void);
 

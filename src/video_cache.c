@@ -1,4 +1,7 @@
+
 #include <time.h>
+#include <curl/curl.h>
+#include <stdio.h>
 #include "kore.h"
 
 #include "video_cache.h"
@@ -10,15 +13,130 @@ static int addSequence(struct vsequence ** cache, struct vsequence *s);
 static struct vsequence * initSequence(char * name, struct segment * data);
 static struct vsequence * getSequence(struct vsequence *s, char *name);
 static int cachesize(struct vsequence * cache);
-static struct vsequence * get_sequence(struct vsequence * s, char *name);*/
+static struct vsequence * get_sequence(struct vsequence * s, char *name);
+*/
+
+
+        void init_string( segment *s) {
+    s->len = 0;
+    s->ptr = (char *) malloc(s->len + 1);
+    kore_log(LOG_ALERT,"init string\n");
+    if (s->ptr == NULL) {
+        fprintf(stderr, "kore_malloc() failed\n");
+        exit(EXIT_FAILURE);
+    }
+    s->ptr[0] = '\0';
+
+}
+
+size_t writestringfunc(void *ptr, size_t size, size_t nmemb, struct segment *s) {
+    size_t new_len = s->len + size * nmemb;
+    s->ptr = (char *) realloc(s->ptr, new_len + 1);
+    if (s->ptr == NULL) {
+        fprintf(stderr, "realloc() failed\n");
+        exit(EXIT_FAILURE);
+    }
+    memcpy(s->ptr + s->len, ptr, size * nmemb);
+    s->ptr[new_len] = '\0';
+    s->len = new_len;
+
+    return size * nmemb;
+}
 
 
 
+static int xferinfo(void *p,
+                    curl_off_t dltotal, curl_off_t dlnow,
+                    curl_off_t ultotal, curl_off_t ulnow) {
 
 
 
+    //  if (dlnow > STOP_DOWNLOAD_AFTER_THIS_MANY_BYTES)
+    //    return 1;
+    return 0;
+}
+
+static int older_progress(void *p,
+                          double dltotal, double dlnow,
+                          double ultotal, double ulnow) {
+    return xferinfo(p,
+                    (curl_off_t) dltotal,
+                    (curl_off_t) dlnow,
+                    (curl_off_t) ultotal,
+                    (curl_off_t) ulnow);
+}
+
+void curlgetsegment( char *url, struct segment * s) {
+
+    CURL *curl;
+    kore_log(LOG_ALERT,"curl doing job\n");
+    struct myprogress prog;
 
 
+    curl = curl_easy_init();
+    if (curl) {
+
+        // struct segment s;
+        init_string(s);
+
+        curl_easy_setopt(curl, CURLOPT_URL,
+                         url);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writestringfunc);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, s);
+        curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, older_progress);
+        curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &prog);
+
+#if LIBCURL_VERSION_NUM >= 0x072000
+        curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, xferinfo);
+        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &prog);
+#endif
+
+        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+         curl_easy_perform(curl);
+
+
+        curl_easy_cleanup(curl);
+        kore_log(LOG_ALERT,"done %lu\n",s->len);
+
+    }
+}
+
+
+void curlget( char *url, char **longString) {
+
+    CURL *curl;
+
+    struct myprogress prog;
+
+
+    curl = curl_easy_init();
+    if (curl) {
+
+        struct segment s;
+        init_string(&s);
+
+        curl_easy_setopt(curl, CURLOPT_URL,
+                         url);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writestringfunc);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &s);
+        curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, older_progress);
+        curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &prog);
+
+#if LIBCURL_VERSION_NUM >= 0x072000
+        curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, xferinfo);
+        curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &prog);
+#endif
+
+        curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+        curl_easy_perform(curl);
+
+        asprintf(longString, "%s", s.ptr);
+        free(s.ptr);
+
+        curl_easy_cleanup(curl);
+
+    }
+}/////////////////////////////////////////////////////////////////////////////////
 
 
  void 		*video_cache(void)
