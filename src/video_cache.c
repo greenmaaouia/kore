@@ -151,7 +151,7 @@ struct vsequence * vcacheget(char * name){
 }
 
 void vcacheadd( struct vsequence *s){
-addSequence(s);
+//addSequence(s);
 }
 
 
@@ -179,12 +179,12 @@ struct vsequence * initSequence(char * name, struct segment * data){
 }
 
 
-int addSequence( struct vsequence *s){
+int addSequence( struct vsequence *s, struct vsequence **m_cache){
 	kore_log(LOG_ALERT,"adding sequence %s to cache at %lu\n",s->name,s->time);
-	if(get_sequence(v_cache, s->name)==NULL){
-		s->next=v_cache;
+	if(get_sequence(*m_cache, s->name)==NULL){
+		s->next=*m_cache;
 		s->time=time(NULL)+EXPIRE_TIME;
-		v_cache=s;
+		m_cache=&s;
 		kore_log(LOG_ALERT,"sequence  cached now\n");
 		return 0;
 	}
