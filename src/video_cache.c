@@ -1,23 +1,16 @@
-#define _GNU_SOURCE
+#ifndef _GNU_SOURCE
+    #define _GNU_SOURCE
+#endif
 #include <time.h>
-#include <curl/curl.h>
+
 #include <stdio.h>
 #include "kore.h"
 
 #include "video_cache.h"
-/*
-static struct seqence * clean_cache(struct vsequence * s);
-static int clean_sequence(struct vsequence * s);
-static struct vsequence * get_sequence(struct vsequence * s, char *name);
-static int addSequence(struct vsequence ** cache, struct vsequence *s);
-static struct vsequence * initSequence(char * name, struct segment * data);
-static struct vsequence * getSequence(struct vsequence *s, char *name);
-static int cachesize(struct vsequence * cache);
-static struct vsequence * get_sequence(struct vsequence * s, char *name);
-*/
 
 
-        void init_string( segment *s) {
+
+void init_string( segment *s) {
     s->len = 0;
     s->ptr = (char *) malloc(s->len + 1);
     kore_log(LOG_ALERT,"init string\n");

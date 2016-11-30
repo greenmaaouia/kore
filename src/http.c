@@ -26,7 +26,7 @@
 
 #include "kore.h"
 #include "http.h"
-
+#include "video_cache.h"
 #if defined(KORE_USE_PGSQL)
 #include "pgsql.h"
 #endif
@@ -298,7 +298,7 @@ http_process(void)
 void
 http_process_request(struct http_request *req)
 {
-	int		r, (*cb)(struct http_request *);
+	int		r, (*cb)(struct http_request *, void *);
 
 	kore_debug("http_process_request: %p->%p (%s)",
 	    req->owner, req, req->path);
@@ -316,7 +316,7 @@ http_process_request(struct http_request *req)
 	case KORE_RESULT_OK:
 		*(void **)&(cb) = req->hdlr->addr;
 		worker->active_hdlr = req->hdlr;
-		r = cb(req);
+		r = cb(req,&v_cache);
 		worker->active_hdlr = NULL;
 		break;
 	case KORE_RESULT_RETRY:
