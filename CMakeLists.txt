@@ -35,5 +35,5 @@ set(SOURCE_FILES
         src/websocket.c
         src/worker.c
         src/video_cache.c)
-#dsldksdsdlk
+link_libraries( curl pthread )
 add_executable(kore ${SOURCE_FILES})
