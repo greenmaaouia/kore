@@ -184,7 +184,7 @@ int addSequence( struct vsequence *s, struct vsequence **m_cache){
 	if(get_sequence(*m_cache, s->name)==NULL){
 		s->next=*m_cache;
 		s->time=time(NULL)+EXPIRE_TIME;
-		m_cache=&s;
+		*m_cache=s;
 		kore_log(LOG_ALERT,"sequence  cached now\n");
 		return 0;
 	}
