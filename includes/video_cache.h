@@ -46,6 +46,6 @@ int                     vcachelen(      void);
 struct vsequence *      clean_cache(    struct vsequence * s);
 int                     clean_sequence( struct vsequence * s);
 struct vsequence *      get_sequence(   struct vsequence * s, char *name);
-int addSequence( struct vsequence *s, struct vsequence **m_cache)
+int                     addSequence(    struct vsequence *s, struct vsequence **m_cache);
 struct vsequence *      initSequence(   char * name, struct segment * data);
 int                     cachesize(      struct vsequence * cache);
