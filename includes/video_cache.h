@@ -34,11 +34,6 @@ void curlget( char *url, char **longString);
 
 void *video_cache(void);
 
-void                    vcacheclean(    void);
-struct vsequence *      vcacheget(      char * name);
-void                    vcacheadd(      struct vsequence *s);
-int                     vcachelen(      void);
-
 
 
 
