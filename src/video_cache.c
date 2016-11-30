@@ -123,7 +123,8 @@ void curlget( char *url, char **longString) {
         curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
         curl_easy_perform(curl);
 
-        asprintf(longString, "%s", s.ptr);
+        int i=asprintf(longString, "%s", s.ptr);
+        printf("%d",i);
         free(s.ptr);
 
         curl_easy_cleanup(curl);
